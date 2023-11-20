@@ -11,8 +11,8 @@ permissions:
   id-token: write
 
 env:
-  BACKEND_WEBAPP_DEV: ketis-be-dev
-  BACKEND_WEBAPP_UAT: ketis-be-uat
+  BACKEND_WEBAPP_DEV: monke-be-dev
+  BACKEND_WEBAPP_UAT: monke-be-uat
   source_branch_name: ${{ github.ref }}
   pr_target_branch_name: ${{ github.base_ref }}
 
