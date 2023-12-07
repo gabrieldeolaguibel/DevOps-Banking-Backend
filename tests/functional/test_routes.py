@@ -30,9 +30,17 @@ def test_create_account(testing_client):
     THEN check the response is valid
     """
     response = testing_client.post(
-        "/accounts", json={"name": "John Doe", "country": "Spain", "currency": "€"}
+        "/accounts",
+        json={
+            "id": 1,
+            "name": "John Doe",
+            "password": "Password",
+            "country": "Spain",
+            "currency": "€",
+        },
     )
     assert response.status_code == 200
+
 
 # write a function that tests update account
 def test_update_account(testing_client):
@@ -42,8 +50,15 @@ def test_update_account(testing_client):
     THEN check the response is valid
     """
     testing_client.post(
-        "/accounts", json={"name": "John Doe", "country": "Spain", "currency": "€"}
-    )  
+        "/accounts",
+        json={
+            "id": 1,
+            "name": "John Doe",
+            "password": "Password",
+            "country": "Spain",
+            "currency": "€",
+        },
+    )
     response = testing_client.put("/accounts/1", json={"name": "Keti"})
     assert response.status_code == 200
 
@@ -57,7 +72,14 @@ def test_delete_account(testing_client):
 
     # Create an account first
     response = testing_client.post(
-        "/accounts", json={"name": "John Doe", "country": "Spain", "currency": "€"}
+        "/accounts",
+        json={
+            "id": 1,
+            "name": "John Doe",
+            "password": "Password",
+            "country": "Spain",
+            "currency": "€",
+        },
     )
 
     # Delete the account by id
@@ -72,9 +94,16 @@ def test_get_account_by_id(testing_client):
     THEN check the response is valid
     """
 
-    # Create an account 
+    # Create an account
     response = testing_client.post(
-        "/accounts", json={"name": "John Doe", "country": "Spain", "currency": "€"}
+        "/accounts",
+        json={
+            "id": 1,
+            "name": "John Doe",
+            "password": "Password",
+            "country": "Spain",
+            "currency": "€",
+        },
     )
 
     # Get the account by id
