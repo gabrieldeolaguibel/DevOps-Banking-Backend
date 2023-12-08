@@ -75,29 +75,50 @@ def change_password(id):
     db.session.commit()
     return get_accounts_by_id(id)
 
-
 # Route to transfer money between accounts
-@app.route(
-    "/accounts/transfer/<int:account_number1>:<int:account_number2>:amount",
-    methods=["PUT"],
-)
-def transfer(account_number1, account_number2, amount):
-    from_account = Account.query.get(account_number1)
-    to_account = Account.query.get(account_number2)
-    if from_account.balance >= amount:
-        from_account.balance -= amount
-        to_account.balance += amount
-        db.session.commit()
-        return {"status": "OK"}
-    else:
-        return {"status": "Not enough balance"}
 
 
-# Update an account name by its account number
-@app.route("/accounts/<int:account_number>", methods=["PUT"])
-def update_account_by_number(account_number):
+@app.route("/accounts/<int:account_number>/transfer", methods=["PUT"])
+def transfer_money(account_number):
+    account_from = Account.query.get(
+        account_number=request.json["account_number1"])
+    account_to = Account.query.get(
+        account_number=request.json["account_number2"])
+    if not account_from or not account_to:
+        return 404
+    if account_from.balance < request.json["amount"]:
+        return 400
+    account_from.balance -= request.json["amount"]
+    account_to.balance += request.json["amount"]
+
+    db.session.commit()
+    return get_accounts()
+
+
+# # Route to transfer money between accounts
+# @app.route(
+#     "/accounts/transfer/<int:account_number1>:<int:account_number2>:amount",
+#     methods=["PUT"],
+# )
+# def transfer(account_number1, account_number2, amount):
+#     from_account = Account.query.get(account_number1)
+#     to_account = Account.query.get(account_number2)
+#     if from_account.balance >= amount:
+#         from_account.balance -= amount
+#         to_account.balance += amount
+#         db.session.commit()
+#         return {"status": "OK"}
+#     else:
+#         return {"status": "Not enough balance"}
+
+
+# Deposit into an account
+@app.route("/accounts/<int:account_number>/deposit", methods=["PUT"])
+def deposit(account_number):
     account = Account.query.get(account_number)
-    account.name = request.json["name"]
+    if not account:
+        return 404
+    account.balance += request.json["amount"]
     db.session.commit()
     return format_account(account)
 
