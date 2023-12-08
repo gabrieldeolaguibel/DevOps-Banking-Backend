@@ -9,7 +9,7 @@ class Account(db.Model):
     password = db.Column(db.String(32), nullable=False)
     country = db.Column(db.String(32), nullable=False)
     account_number = db.Column(
-        db.String(20), nullable=False, unique=True, primary_key=True
+        db.String(10), nullable=False, unique=True, primary_key=True
     )
     balance = db.Column(db.Float, nullable=False, default=0.0)
     currency = db.Column(db.String(1), nullable=False, default="€")
@@ -28,7 +28,7 @@ class Account(db.Model):
         self.name = name
         self.password = password
         self.country = country
-        self.account_number = "".join(random.choices(string.digits, k=20))
+        self.account_number = "".join(random.choices(string.digits, k=10))
         self.currency = currency
         self.balance = 0.0
         self.status = "Active"

@@ -66,26 +66,46 @@ def get_accounts_by_id(id):
     return {"accounts": [format_account(account) for account in accounts]}
 
 
-##########################
-# Change this routes and their corresponding tests
-##########################
-@app.route("/accounts/<int:id>", methods=["GET"])
-def get_account(id):
-    account = Account.query.get(id)
-    return format_account(account)
+# Route to change password in an account given its ID
+@app.route("/accounts/<int:id>/change_password", methods=["PUT"])
+def change_password(id):
+    accounts = Account.query.filter_by(id=id).all()
+    for account in accounts:
+        account.password = request.json["password"]
+    db.session.commit()
+    return get_accounts_by_id(id)
 
 
-@app.route("/accounts/<int:id>", methods=["PUT"])
-def update_account(id):
-    account = Account.query.get(id)
+# Route to transfer money between accounts
+@app.route(
+    "/accounts/transfer/<int:account_number1>:<int:account_number2>:amount",
+    methods=["PUT"],
+)
+def transfer(account_number1, account_number2, amount):
+    from_account = Account.query.get(account_number1)
+    to_account = Account.query.get(account_number2)
+    if from_account.balance >= amount:
+        from_account.balance -= amount
+        to_account.balance += amount
+        db.session.commit()
+        return {"status": "OK"}
+    else:
+        return {"status": "Not enough balance"}
+
+
+# Update an account name by its account number
+@app.route("/accounts/<int:account_number>", methods=["PUT"])
+def update_account_by_number(account_number):
+    account = Account.query.get(account_number)
     account.name = request.json["name"]
     db.session.commit()
     return format_account(account)
 
 
-@app.route("/accounts/<int:id>", methods=["DELETE"])
-def delete_account(id):
-    account = Account.query.get(id)
+# Delete an account by its account number
+@app.route("/accounts/<int:account_number>", methods=["DELETE"])
+def delete_account_by_number(account_number):
+    account = Account.query.get(account_number)
     db.session.delete(account)
     db.session.commit()
     return format_account(account)
