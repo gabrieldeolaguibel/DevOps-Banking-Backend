@@ -86,16 +86,16 @@ def deposit(id):
 
 
 # Route to transfer money between accounts
-@app.route("/accounts/<int:account_number>/transfer", methods=["PUT"])
-def transfer_money(account_number):
-    account_from = Account.query.get(account_number=request.json["account_number1"])
-    account_to = Account.query.get(account_number=request.json["account_number2"])
+@app.route("/accounts/<int:id>/transfer", methods=["PUT"])
+def transfer_money(id):
+    account_from = Account.query.get(request.json["account_number1"])
+    account_to = Account.query.get(request.json["account_number2"])
     if not account_from or not account_to:
         return 404
-    if account_from.balance < request.json["amount"]:
+    if float(account_from.balance) < float(request.json["amount"]):
         return 400
-    account_from.balance -= request.json["amount"]
-    account_to.balance += request.json["amount"]
+    account_from.balance -= float(request.json["amount"])
+    account_to.balance += float(request.json["amount"])
 
     db.session.commit()
     return get_accounts()
