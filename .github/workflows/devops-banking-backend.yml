@@ -13,6 +13,7 @@ permissions:
 env:
   BACKEND_WEBAPP_DEV: monke-be-dev
   BACKEND_WEBAPP_UAT: monke-be-uat
+  BACKEND_WEBAPP_PROD: monke-be-prod
   source_branch_name: ${{ github.ref }}
   pr_target_branch_name: ${{ github.base_ref }}
 
@@ -108,4 +109,30 @@ jobs:
         id: deploy-to-webapp
         with:
           app-name: ${{ env.BACKEND_WEBAPP_UAT }}
+          package: .
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: [build, deploy-dev, deploy-uat]
+    # if: ${{ pr_target_branch_name == 'refs/heads/main' }} #deploys only on PR to main branch
+    environment:
+      name: "Production"
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: python-app
+          path: .
+
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: "Deploy to Azure Web App"
+        uses: azure/webapps-deploy@v2
+        id: deploy-to-webapp
+        with:
+          app-name: ${{ env.BACKEND_WEBAPP_PROD }}
           package: .
