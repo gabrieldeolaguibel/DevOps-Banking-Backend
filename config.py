@@ -28,6 +28,7 @@ class DevelopmentConfig(Config):
         dbname=os.getenv("DBNAME"),
     )
     DEBUG = True
+    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv("APPINSIGHTS_INSTRUMENTATIONKEY")
 
 
 class UATConfig(Config):
@@ -38,3 +39,15 @@ class UATConfig(Config):
         dbname=os.getenv("DBNAME"),
     )
     DEBUG = False
+    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv("APPINSIGHTS_INSTRUMENTATIONKEY")
+
+
+class ProductionConfig(Config):
+    SQLALCHEMY_DATABASE_URI = "postgresql://{dbuser}:{dbpass}@{dbhost}/{dbname}".format(
+        dbuser=os.getenv("DBUSER"),
+        dbpass=os.getenv("DBPASS"),
+        dbhost=os.getenv("DBHOST"),
+        dbname=os.getenv("DBNAME"),
+    )
+    DEBUG = False
+    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv("APPINSIGHTS_INSTRUMENTATIONKEY")

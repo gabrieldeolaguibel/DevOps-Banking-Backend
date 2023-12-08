@@ -66,6 +66,8 @@ jobs:
     environment:
       name: "Development"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    env:
+      APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_KEY_DEV }}
 
     steps:
       - name: Download artifact from build job
@@ -92,6 +94,8 @@ jobs:
     environment:
       name: "User Acceptance Testing"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    env:
+      APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_KEY_UAT }}
 
     steps:
       - name: Download artifact from build job
@@ -118,6 +122,8 @@ jobs:
     environment:
       name: "Production"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    env:
+      APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_KEY_PROD }}
 
     steps:
       - name: Download artifact from build job
