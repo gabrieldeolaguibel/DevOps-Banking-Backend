@@ -75,15 +75,21 @@ def change_password(id):
     db.session.commit()
     return get_accounts_by_id(id)
 
+
+# Deposit into an account
+@app.route("/accounts/<int:id>/deposit", methods=["PUT"])
+def deposit(id):
+    account = Account.query.get(request.json["account_number"])
+    account.balance += float(request.json["deposit"])
+    db.session.commit()
+    return format_account(account)
+
+
 # Route to transfer money between accounts
-
-
 @app.route("/accounts/<int:account_number>/transfer", methods=["PUT"])
 def transfer_money(account_number):
-    account_from = Account.query.get(
-        account_number=request.json["account_number1"])
-    account_to = Account.query.get(
-        account_number=request.json["account_number2"])
+    account_from = Account.query.get(account_number=request.json["account_number1"])
+    account_to = Account.query.get(account_number=request.json["account_number2"])
     if not account_from or not account_to:
         return 404
     if account_from.balance < request.json["amount"]:
@@ -93,34 +99,6 @@ def transfer_money(account_number):
 
     db.session.commit()
     return get_accounts()
-
-
-# # Route to transfer money between accounts
-# @app.route(
-#     "/accounts/transfer/<int:account_number1>:<int:account_number2>:amount",
-#     methods=["PUT"],
-# )
-# def transfer(account_number1, account_number2, amount):
-#     from_account = Account.query.get(account_number1)
-#     to_account = Account.query.get(account_number2)
-#     if from_account.balance >= amount:
-#         from_account.balance -= amount
-#         to_account.balance += amount
-#         db.session.commit()
-#         return {"status": "OK"}
-#     else:
-#         return {"status": "Not enough balance"}
-
-
-# Deposit into an account
-@app.route("/accounts/<int:account_number>/deposit", methods=["PUT"])
-def deposit(account_number):
-    account = Account.query.get(account_number)
-    if not account:
-        return 404
-    account.balance += request.json["amount"]
-    db.session.commit()
-    return format_account(account)
 
 
 # Delete an account by its account number
