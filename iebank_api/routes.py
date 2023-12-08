@@ -84,8 +84,21 @@ def deposit(id):
     db.session.commit()
     return format_account(account)
 
+# Withdraw from account
+
+
+@app.route("/accounts/<int:id>/withdraw", methods=["PUT"])
+def withdraw(id):
+    account = Account.query.get(request.json["account_number"])
+    if float(request.json["withdraw"]) > account.balance:
+        return 400
+    account.balance -= float(request.json["withdraw"])
+    db.session.commit()
+    return format_account(account)
 
 # Route to transfer money between accounts
+
+
 @app.route("/accounts/<int:id>/transfer", methods=["PUT"])
 def transfer_money(id):
     account_from = Account.query.get(request.json["account_number1"])
