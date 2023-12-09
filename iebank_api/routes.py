@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from iebank_api import db, app
 from iebank_api.models import Account
 
@@ -28,10 +28,15 @@ def skull():
 def create_account():
     id = request.json["id"]
     name = request.json["name"]
-    password = request.json["password"]
+    password = encrypt_password(request.json["password"])  # Encrypt password
+    if get_accounts_by_id(id) != {"accounts": []}:  # Check if ID exists
+        password = get_accounts_by_id(id)["accounts"][0]["password"]
     country = request.json["country"]
     currency = request.json["currency"]
-    account = Account(id, name, password, country, currency)
+    account_number = None
+    if "account_number" in request.json:
+        account_number = request.json["account_number"]
+    account = Account(id, name, password, country, currency, account_number)
     db.session.add(account)
     db.session.commit()
     return format_account(account)
@@ -45,7 +50,9 @@ def get_accounts():
 
 @app.route("/auth/<string:name>:<string:password>", methods=["GET"])
 def check_credentials(name, password):
-    account = Account.query.filter_by(name=name, password=password).first()
+    account = Account.query.filter_by(
+        name=name, password=encrypt_password(password)
+    ).first()
     if account is None:
         return {}
     else:
@@ -56,6 +63,17 @@ def check_credentials(name, password):
 @app.route("/accounts/<int:account_number>", methods=["GET"])
 def get_account_by_number(account_number):
     account = Account.query.get(account_number)
+    return format_account(account)
+
+
+@app.route("/accounts/<string:account_number>", methods=["PUT"])
+def change_account_name(account_number):
+    account = Account.query.filter_by(account_number=str(account_number)).first()
+    if account is None:
+        return {"message": "Account not found"}, 404
+
+    account.name = request.json["name"]
+    db.session.commit()
     return format_account(account)
 
 
@@ -84,29 +102,27 @@ def deposit(id):
     db.session.commit()
     return format_account(account)
 
+
 # Withdraw from account
-
-
 @app.route("/accounts/<int:id>/withdraw", methods=["PUT"])
 def withdraw(id):
     account = Account.query.get(request.json["account_number"])
     if float(request.json["withdraw"]) > account.balance:
-        return 400
+        return jsonify({"error": "Insufficient balance"}), 400
     account.balance -= float(request.json["withdraw"])
     db.session.commit()
     return format_account(account)
 
+
 # Route to transfer money between accounts
-
-
 @app.route("/accounts/<int:id>/transfer", methods=["PUT"])
 def transfer_money(id):
     account_from = Account.query.get(request.json["account_number1"])
     account_to = Account.query.get(request.json["account_number2"])
     if not account_from or not account_to:
-        return 404
+        return jsonify({"error": "Account does not exist"}), 404
     if float(account_from.balance) < float(request.json["amount"]):
-        return 400
+        return jsonify({"error": "Insufficient balance"}), 400
     account_from.balance -= float(request.json["amount"])
     account_to.balance += float(request.json["amount"])
 
@@ -115,9 +131,9 @@ def transfer_money(id):
 
 
 # Delete an account by its account number
-@app.route("/accounts/<int:account_number>", methods=["DELETE"])
+@app.route("/accounts/<string:account_number>", methods=["DELETE"])
 def delete_account_by_number(account_number):
-    account = Account.query.get(account_number)
+    account = Account.query.get(str(account_number))
     db.session.delete(account)
     db.session.commit()
     return format_account(account)
@@ -135,3 +151,19 @@ def format_account(account):
         "status": account.status,
         "created_at": account.created_at,
     }
+
+
+def encrypt_password(password):
+    # Simple Ceasar cipher
+    encrypted_password = ""
+    for char in password:
+        encrypted_password += chr(ord(char) + 1)
+    return encrypted_password
+
+
+def decrypt_password(password):
+    # Simple Ceasar cipher
+    decrypted_password = ""
+    for char in password:
+        decrypted_password += chr(ord(char) - 1)
+    return decrypted_password
