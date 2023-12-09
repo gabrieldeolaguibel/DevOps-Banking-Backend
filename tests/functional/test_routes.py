@@ -37,13 +37,14 @@ def test_create_account(testing_client):
             "password": "Password",
             "country": "Spain",
             "currency": "€",
+            "account_number": "0580982293"
         },
     )
     assert response.status_code == 200
 
 
 # write a function that tests update account
-def test_update_account(testing_client):
+def test_change_account_name(testing_client):
     """
     GIVEN a Flask application
     WHEN the '/accounts' page is posted to (PUT) with an name
@@ -57,9 +58,14 @@ def test_update_account(testing_client):
             "password": "Password",
             "country": "Spain",
             "currency": "€",
+            "account_number": "0580982293"
         },
     )
-    response = testing_client.put("/accounts/1", json={"name": "Keti"})
+
+    print("Response", )
+
+    response = testing_client.put(
+        "/accounts/0580982293", json={"name": "Keti", "account_number": "0580982293"})
     assert response.status_code == 200
 
 
@@ -79,11 +85,13 @@ def test_delete_account(testing_client):
             "password": "Password",
             "country": "Spain",
             "currency": "€",
+            "account_number": "0580982293"
         },
     )
 
     # Delete the account by id
-    response = testing_client.delete("/accounts/1")
+    response = testing_client.delete(
+        "/accounts/0580982293", json={"account_number": "0580982293"})
     assert response.status_code == 200
 
 
@@ -107,5 +115,5 @@ def test_get_account_by_id(testing_client):
     )
 
     # Get the account by id
-    response = testing_client.get("/accounts/1")
+    response = testing_client.get("/accounts/customer/1")
     assert response.status_code == 200

@@ -8,8 +8,10 @@ def test_account_create():
     WHEN a new Account is created
     THEN check the name, account_number, balance, currency, status and created_at fields are defined correctly
     """
-    account = Account("John Doe", "Spain", "€")
+    account = Account(1, "John Doe", "password", "Spain", "€", None)
+    assert account.id == 1
     assert account.name == "John Doe"
+    assert account.password == "password"
     assert account.country == "Spain"
     assert account.currency == "€"
     assert account.account_number != None
@@ -23,8 +25,8 @@ def test_account_repr():
     WHEN a new Account is created
     THEN check the __repr__ method is defined correctly
     """
-    account = Account("John Doe", "Spain", "€")
-    assert repr(account) == f"<Event '{(account.account_number)}'>"
+    account = Account(1, "John Doe", "password", "Spain", "€", None)
+    assert repr(account) == f"<Event {(account.id)}>"
 
 
 def test_account_deactivate():
@@ -33,5 +35,5 @@ def test_account_deactivate():
     WHEN a new Account is created
     THEN check the __deactivate__ method is defined correctly
     """
-    account = Account("John Doe", "Spain", "€")
+    account = Account(1, "John Doe", "password", "Spain", "€", None)
     assert account.__deactivate__() == "Inactive"

@@ -31,7 +31,10 @@ def create_account():
     password = request.json["password"]
     country = request.json["country"]
     currency = request.json["currency"]
-    account = Account(id, name, password, country, currency)
+    account_number = None
+    if "account_number" in request.json:
+        account_number = request.json["account_number"]
+    account = Account(id, name, password, country, currency, account_number)
     db.session.add(account)
     db.session.commit()
     return format_account(account)
@@ -56,6 +59,18 @@ def check_credentials(name, password):
 @app.route("/accounts/<int:account_number>", methods=["GET"])
 def get_account_by_number(account_number):
     account = Account.query.get(account_number)
+    return format_account(account)
+
+
+@app.route("/accounts/<string:account_number>", methods=["PUT"])
+def change_account_name(account_number):
+    account = Account.query.filter_by(
+        account_number=str(account_number)).first()
+    if account is None:
+        return {"message": "Account not found"}, 404
+
+    account.name = request.json["name"]
+    db.session.commit()
     return format_account(account)
 
 
@@ -115,9 +130,9 @@ def transfer_money(id):
 
 
 # Delete an account by its account number
-@app.route("/accounts/<int:account_number>", methods=["DELETE"])
+@app.route("/accounts/<string:account_number>", methods=["DELETE"])
 def delete_account_by_number(account_number):
-    account = Account.query.get(account_number)
+    account = Account.query.get(str(account_number))
     db.session.delete(account)
     db.session.commit()
     return format_account(account)
