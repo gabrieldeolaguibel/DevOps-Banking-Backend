@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from iebank_api import db, app
 from iebank_api.models import Account
 
+# import iebank_api.services as services
+
 
 @app.route("/")
 def hello_world():
@@ -40,6 +42,21 @@ def create_account():
     db.session.add(account)
     db.session.commit()
     return format_account(account)
+
+
+# @app.route("/accounts", methods=["POST"])
+# def create_account_route():
+#     id = request.json["id"]
+#     name = request.json["name"]
+#     password = request.json["password"]
+#     country = request.json["country"]
+#     currency = request.json["currency"]
+#     account_number = None
+#     if "account_number" in request.json:
+#         account_number = request.json["account_number"]
+#     return services.create_account(
+#         id, name, password, country, currency, account_number
+#     )
 
 
 @app.route("/accounts", methods=["GET"])

@@ -15,14 +15,17 @@ class Account(db.Model):
     balance = db.Column(db.Float, nullable=False, default=0.0)
     currency = db.Column(db.String(1), nullable=False, default="€")
     status = db.Column(db.String(10), nullable=False, default="Active")
-    created_at = db.Column(db.DateTime, nullable=False,
-                           default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
         return "<Event %r>" % self.id
 
     def __deactivate__(self):
         self.status = "Inactive"
+        return self.status
+
+    def __activate__(self):
+        self.status = "Active"
         return self.status
 
     def __init__(self, id, name, password, country, currency, account_number):
