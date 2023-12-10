@@ -51,3 +51,44 @@ def get_accounts():
 def get_accounts_by_id(id):
     accounts = Account.query.filter_by(id=id).all()
     return {"accounts": [format_account(account) for account in accounts]}
+
+
+def get_account_by_number(account_number):
+    account = Account.query.filter_by(account_number=account_number).first()
+    if account is None:
+        return {}
+    else:
+        return format_account(account)
+
+
+def change_account_name(account_number, new_name):
+    account = Account.query.filter_by(account_number=account_number).first()
+    if account is None:
+        return {}
+    else:
+        account.name = new_name
+        db.session.commit()
+        return format_account(account)
+
+
+def deposit(account_number, amount):
+    account = Account.query.filter_by(account_number=account_number).first()
+    if account is None:
+        return {}
+    else:
+        account.balance += float(amount)
+        db.session.commit()
+        return format_account(account)
+
+
+def withdraw(account_number, amount):
+    account = Account.query.filter_by(account_number=account_number).first()
+    if account is None:
+        return {}
+    else:
+        if float(amount) > account.balance:
+            return {}, 400
+        else:
+            account.balance -= float(amount)
+            db.session.commit()
+            return format_account(account)

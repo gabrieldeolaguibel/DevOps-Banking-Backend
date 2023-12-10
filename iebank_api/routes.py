@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from iebank_api import db, app
 from iebank_api.models import Account
 
-# import iebank_api.services as services
+import iebank_api.services as services
 
 
 @app.route("/")
@@ -27,42 +27,23 @@ def skull():
 
 
 @app.route("/accounts", methods=["POST"])
-def create_account():
+def create_account_route():
     id = request.json["id"]
     name = request.json["name"]
-    password = encrypt_password(request.json["password"])  # Encrypt password
-    if get_accounts_by_id(id) != {"accounts": []}:  # Check if ID exists
-        password = get_accounts_by_id(id)["accounts"][0]["password"]
+    password = request.json["password"]
     country = request.json["country"]
     currency = request.json["currency"]
     account_number = None
     if "account_number" in request.json:
         account_number = request.json["account_number"]
-    account = Account(id, name, password, country, currency, account_number)
-    db.session.add(account)
-    db.session.commit()
-    return format_account(account)
-
-
-# @app.route("/accounts", methods=["POST"])
-# def create_account_route():
-#     id = request.json["id"]
-#     name = request.json["name"]
-#     password = request.json["password"]
-#     country = request.json["country"]
-#     currency = request.json["currency"]
-#     account_number = None
-#     if "account_number" in request.json:
-#         account_number = request.json["account_number"]
-#     return services.create_account(
-#         id, name, password, country, currency, account_number
-#     )
+    return services.create_account(
+        id, name, password, country, currency, account_number
+    )
 
 
 @app.route("/accounts", methods=["GET"])
 def get_accounts():
-    accounts = Account.query.all()
-    return {"accounts": [format_account(account) for account in accounts]}
+    return services.get_accounts()
 
 
 @app.route("/auth/<string:name>:<string:password>", methods=["GET"])
@@ -76,21 +57,15 @@ def check_credentials(name, password):
         return {"id": account.id, "name": account.name, "password": account.password}
 
 
+@app.route("/accounts/<string:account_number>", methods=["PUT"])
+def change_account_name(account_number):
+    return services.change_account_name(account_number, request.json["name"])
+
+
 # New get account route (ID not primary key, it's the account number)
 @app.route("/accounts/<int:account_number>", methods=["GET"])
 def get_account_by_number(account_number):
     account = Account.query.get(account_number)
-    return format_account(account)
-
-
-@app.route("/accounts/<string:account_number>", methods=["PUT"])
-def change_account_name(account_number):
-    account = Account.query.filter_by(account_number=str(account_number)).first()
-    if account is None:
-        return {"message": "Account not found"}, 404
-
-    account.name = request.json["name"]
-    db.session.commit()
     return format_account(account)
 
 
@@ -106,29 +81,19 @@ def get_accounts_by_id(id):
 def change_password(id):
     accounts = Account.query.filter_by(id=id).all()
     for account in accounts:
-        account.password = request.json["password"]
+        account.password = encrypt_password(request.json["password"])
     db.session.commit()
     return get_accounts_by_id(id)
 
 
-# Deposit into an account
 @app.route("/accounts/<int:id>/deposit", methods=["PUT"])
 def deposit(id):
-    account = Account.query.get(request.json["account_number"])
-    account.balance += float(request.json["deposit"])
-    db.session.commit()
-    return format_account(account)
+    return services.deposit(request.json["account_number"], request.json["deposit"])
 
 
-# Withdraw from account
 @app.route("/accounts/<int:id>/withdraw", methods=["PUT"])
 def withdraw(id):
-    account = Account.query.get(request.json["account_number"])
-    if float(request.json["withdraw"]) > account.balance:
-        return jsonify({"error": "Insufficient balance"}), 400
-    account.balance -= float(request.json["withdraw"])
-    db.session.commit()
-    return format_account(account)
+    return services.withdraw(request.json["account_number"], request.json["withdraw"])
 
 
 # Route to transfer money between accounts
