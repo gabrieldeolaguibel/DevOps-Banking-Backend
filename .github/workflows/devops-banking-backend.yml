@@ -11,9 +11,9 @@ permissions:
   id-token: write
 
 env:
-  BACKEND_WEBAPP_DEV: monke-be-dev
-  BACKEND_WEBAPP_UAT: monke-be-uat
-  BACKEND_WEBAPP_PROD: monke-be-prod
+  BACKEND_WEBAPP_DEV: lemonke-be-dev
+  BACKEND_WEBAPP_UAT: lemonke-be-uat
+  BACKEND_WEBAPP_PROD: lemonke-be-prod
   source_branch_name: ${{ github.ref }}
   pr_target_branch_name: ${{ github.base_ref }}
 
