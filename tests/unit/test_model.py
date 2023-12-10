@@ -37,3 +37,14 @@ def test_account_deactivate():
     """
     account = Account(1, "John Doe", "password", "Spain", "€", None)
     assert account.__deactivate__() == "Inactive"
+
+
+def test_account_activate():
+    """
+    GIVEN a Account model
+    WHEN a new Account is created
+    THEN check the __activate__ method is defined correctly
+    """
+    account = Account(1, "John Doe", "password", "Spain", "€", None)
+    account.__deactivate__()
+    assert account.__activate__() == "Active"
