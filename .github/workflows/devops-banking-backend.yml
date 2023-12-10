@@ -13,8 +13,8 @@ env:
   IMAGE_NAME: backend
   KEY_VAULT_SECRET_NAME_ACR_USERNAME: 'acr-username'
   KEY_VAULT_SECRET_NAME_ACR_PASSWORD: 'acr-password1'
-  KEY_VAULT_NAME: 'lemonke-kv' # Replace with your actual Key Vault name
-  DOCKER_REGISTRY_SERVER_URL: 'lemonkecr.azurecr.io' # Replace with your actual ACR login server URL
+  KEY_VAULT_NAME: lemonke-kv 
+  DOCKER_REGISTRY_SERVER_URL: lemonkecr.azurecr.io 
 
 jobs:
   build-and-deploy:
