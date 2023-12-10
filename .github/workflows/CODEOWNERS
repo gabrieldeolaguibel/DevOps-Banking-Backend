@@ -1,0 +1,14 @@
+# CODEOWNSERS FILE FOR THE MAIN BRANCH 
+# General default owners for everything
+
+* @Lukasaurus11
+* @KTsula
+* @felixggj
+* @gabrieldeolaguibel
+* @Jannikwendt
+* @maudhelen
+* @cheblimarc4
+* @mmdrumond
+
+# Higher priority owners for the main branch would be the architect and the product owners 
+/main/* @maudhelen @gabrieldeolaguibel
