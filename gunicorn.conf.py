@@ -7,7 +7,9 @@ log_file = "-"
 
 bind = "0.0.0.0:8181"
 
-workers = (multiprocessing.cpu_count() * 2) + 1
+#workers = (multiprocessing.cpu_count() * 2) + 1
+
+workers = 3
 threads = workers
 
 timeout = 120
