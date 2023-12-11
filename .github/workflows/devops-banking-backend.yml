@@ -55,7 +55,6 @@ jobs:
           docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
 
       #  Testing
-    steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
