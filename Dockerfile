@@ -1,6 +1,8 @@
-FROM python:3.11
+# syntax=docker/dockerfile:1
 
-WORKDIR /app
+FROM python:3.9
+
+WORKDIR /code
 
 COPY requirements.txt .
 
@@ -8,6 +10,8 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-EXPOSE 8181
+EXPOSE 50505
+
+ENV NAME local
 
 ENTRYPOINT ["gunicorn", "iebank_api:app"]
