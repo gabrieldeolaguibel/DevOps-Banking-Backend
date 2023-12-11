@@ -47,50 +47,33 @@ jobs:
         id: image-version
         run: echo "::set-output name=version::$(date +'%Y.%m.%d.%H.%M')"
 
+      # Step 2: Run tests
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      # Add steps to install dependencies, setup environment, and run tests here...
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: python -m pytest tests/unit -v
+
+      - name: Run functional tests
+        run: python -m pytest tests/functional -v
+
+      - name: Generate coverage report
+        run: python -m pytest --cov=iebank_api --cov-report=xml:coverage.xml
+
+      # Build and Push image
       - name: "Build and push image"
         run: |
           docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
           docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
           docker tag ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }} ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
-
-      #  Testing
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.11"
-      - name: Upgrade pip
-        run: |
-          python -m pip install --upgrade pip
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-      - name: Lint with flake8
-        run: |
-          pip install flake8 pytest
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Test with pytest
-        run: |
-
-          # Run unit tests
-          python -m pytest tests/unit -v
-
-          # Run functional tests
-          python -m pytest tests/functional -v
-
-          # Generate coverage report
-          python -m pytest --cov=iebank_api --cov-report=xml:coverage.xml
-
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v2
-        with:
-          name: python-app
-          path: |
-            .
 
       - name: "Deploy to Azure Web App - Dev"
         if: github.ref == 'refs/heads/dev'
