@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 env:
-  BACKEND_WEBAPP_DEV: lemonke-be-dev
+  BACKEND_WEBAPP_DEV: lemonke2-be-dev
   BACKEND_WEBAPP_UAT: lemonke-be-uat
   BACKEND_WEBAPP_PROD: lemonke-be-prod
   source_branch_name: ${{ github.ref }}
