@@ -8,6 +8,6 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 5050
 
 ENTRYPOINT ["gunicorn", "iebank_api:app"]
