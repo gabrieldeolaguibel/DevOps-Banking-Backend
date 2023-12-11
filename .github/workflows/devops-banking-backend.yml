@@ -2,6 +2,7 @@ name: ie-bank-backend
 
 on:
   push:
+    branches: ["main", "feature/*"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -60,7 +61,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_DEV }}
-          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
+          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}"
 
       - name: "Deploy to Azure Web App - UAT"
         if: github.ref == (github.event_name == 'pull_request' && github.event.action != 'closed') || github.ref == 'refs/heads/main'
