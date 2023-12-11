@@ -28,7 +28,7 @@ class DevelopmentConfig(Config):
         dbname=os.getenv("DBNAME"),
     )
     DEBUG = True
-    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv("APPINSIGHTS_INSTRUMENTATIONKEY")
+    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv("APPINSIGHTS_KEY_DEV")
 
 
 class UATConfig(Config):
@@ -39,7 +39,7 @@ class UATConfig(Config):
         dbname=os.getenv("DBNAME"),
     )
     DEBUG = False
-    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv("APPINSIGHTS_INSTRUMENTATIONKEY")
+    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv("APPINSIGHTS_KEY_UAT")
 
 
 class ProductionConfig(Config):
@@ -50,4 +50,4 @@ class ProductionConfig(Config):
         dbname=os.getenv("DBNAME"),
     )
     DEBUG = False
-    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv("APPINSIGHTS_INSTRUMENTATIONKEY")
+    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv("APPINSIGHTS_KEY_PROD")
