@@ -18,12 +18,43 @@ env:
 
 jobs:
   build-and-deploy:
+    if: startsWith(github.ref, 'refs/heads/feature/') || github.ref == 'refs/heads/main' || github.ref == (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-
+    env:
+      ENV: ghci
     steps:
-      - name: "Checkout Github Action"
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Lint with flake8
+        run: |
+          pip install flake8 pytest
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with pytest
+        run: |
 
+          # Run unit tests
+          python -m pytest ./tests/unit -v
+
+          # Run functional tests
+          python -m pytest ./tests/functional -v
+
+          # Generate coverage report
+          python -m pytest --cov=iebank_api --cov-report=xml:coverage.xml
+
+      - uses: actions/checkout@v3
+      
       - name: "Login via Azure CLI"
         uses: azure/login@v1
         with:
@@ -36,7 +67,6 @@ jobs:
             echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
             echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
 
-            
       - name: "Login to Docker Registry"
         uses: azure/docker-login@v1
         with:
@@ -68,6 +98,14 @@ jobs:
         with:
           app-name: ${{ env.BACKEND_WEBAPP_UAT }}
           images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
+          
+          # ONCE UAT IS UP, CHANGE POSTMAND ENV FILE WITH UAT URL
+      # # POSTMAN tests after UAT, before PROD
+      # - name: Install Newman
+      #   run: npm install -g newman
+
+      # - name: Run Postman Tests
+      #   run: newman run ./DevOpsBanking.postman_collection.json -e ./DevOpsEnv.postman_environment.json
 
       - name: "Deploy to Azure Web App - Prod"
         if: github.ref == 'refs/heads/main'
