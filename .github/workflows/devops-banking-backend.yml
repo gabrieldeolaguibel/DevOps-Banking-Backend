@@ -56,14 +56,14 @@ jobs:
           docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
 
       - name: "Deploy to Azure Web App - Dev"
-        if: github.ref == 'refs/heads/main'
+        if: startsWith(github.ref, 'refs/heads/feature/') || github.ref == 'refs/heads/main' || github.ref == (github.event_name == 'pull_request' && github.event.action != 'closed')
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_DEV }}
           images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
 
       - name: "Deploy to Azure Web App - UAT"
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == (github.event_name == 'pull_request' && github.event.action != 'closed') || github.ref == 'refs/heads/main'
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_UAT }}
