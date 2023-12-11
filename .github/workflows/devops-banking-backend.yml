@@ -50,8 +50,8 @@ jobs:
       - name: "Build and push image"
         run: |
           docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
-          docker tag ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
 
       - name: "Deploy to Azure Web App - Dev"
