@@ -11,66 +11,100 @@ env:
   BACKEND_WEBAPP_UAT: lemonke-be-uat
   BACKEND_WEBAPP_PROD: lemonke-be-prod
   IMAGE_NAME: backend
-  KEY_VAULT_SECRET_NAME_ACR_USERNAME: 'acr-username'
-  KEY_VAULT_SECRET_NAME_ACR_PASSWORD: 'acr-password1'
-  KEY_VAULT_NAME: lemonke-kv 
-  DOCKER_REGISTRY_SERVER_URL: lemonkecr.azurecr.io 
+  KEY_VAULT_SECRET_NAME_ACR_USERNAME: "acr-username"
+  KEY_VAULT_SECRET_NAME_ACR_PASSWORD: "acr-password1"
+  KEY_VAULT_NAME: lemonke-kv
+  DOCKER_REGISTRY_SERVER_URL: lemonkecr.azurecr.io
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 'Checkout Github Action'
-      uses: actions/checkout@v3
+      - name: "Checkout Github Action"
+        uses: actions/checkout@v3
 
-    - name: 'Login via Azure CLI'
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-    
-    - name: 'Get docker registry credentials from Azure Key Vault'
-      uses: azure/CLI@v1
-      with:
-        inlineScript: |
-          echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
-          echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
+      - name: "Login via Azure CLI"
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: "Login to Docker Registry"
-      uses: azure/docker-login@v1
-      with:
-        login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL }}
-        username: ${{ env.REGISTRY_USERNAME }}
-        password: ${{ env.REGISTRY_PASSWORD }}
-    
-    - name: Set image version
-      id: image-version
-      run: echo "::set-output name=version::$(date +'%Y.%m.%d.%H.%M')"
+      - name: "Get docker registry credentials from Azure Key Vault"
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
 
-    - name: 'Build and push image'
-      run: |
-        docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
-        docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
-        docker tag ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }} ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
-        docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
+      - name: "Login to Docker Registry"
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
 
-    - name: "Deploy to Azure Web App - Dev"
-      if: github.ref == 'refs/heads/dev'
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.BACKEND_WEBAPP_DEV }}
-        images: '${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest'
+      - name: Set image version
+        id: image-version
+        run: echo "::set-output name=version::$(date +'%Y.%m.%d.%H.%M')"
 
-    - name: "Deploy to Azure Web App - UAT"
-      if: github.ref == 'refs/heads/uat'
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.BACKEND_WEBAPP_UAT }}
-        images: '${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest'
+      - name: "Build and push image"
+        run: |
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
+          docker tag ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }} ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
 
-    - name: "Deploy to Azure Web App - Prod"
-      if: github.ref == 'refs/heads/main'
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.BACKEND_WEBAPP_PROD }}
-        images: '${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest'
+      #  Testing
+      - name: Lint with flake8
+        run: |
+          pip install flake8 pytest
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with pytest
+        run: |
+
+          # Run unit tests
+          python -m pytest tests/unit -v
+
+          # Run functional tests
+          python -m pytest tests/functional -v
+
+          # Generate coverage report
+          python -m pytest --cov=iebank_api --cov-report=xml:coverage.xml
+
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v2
+        with:
+          name: python-app
+          path: |
+            .
+
+      - name: "Deploy to Azure Web App - Dev"
+        if: github.ref == 'refs/heads/dev'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.BACKEND_WEBAPP_DEV }}
+          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
+
+      - name: "Deploy to Azure Web App - UAT"
+        if: github.ref == 'refs/heads/uat'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.BACKEND_WEBAPP_UAT }}
+          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
+
+      # POSTMAN tests after UAT, before PROD
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run Postman Tests
+        run: newman run ./DevOpsBanking.postman_collection.json -e ./DevOpsEnv.postman_environment.json
+
+      - name: "Deploy to Azure Web App - Prod"
+        if: github.ref == 'refs/heads/main'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.BACKEND_WEBAPP_PROD }}
+          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
