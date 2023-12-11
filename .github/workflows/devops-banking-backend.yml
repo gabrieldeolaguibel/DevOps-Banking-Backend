@@ -54,6 +54,7 @@ jobs:
           python -m pytest --cov=iebank_api --cov-report=xml:coverage.xml
 
       - uses: actions/checkout@v3
+      
       - name: "Login via Azure CLI"
         uses: azure/login@v1
         with:
@@ -80,24 +81,24 @@ jobs:
       - name: "Build and push image"
         run: |
           docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
-          docker tag ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }} ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
 
       - name: "Deploy to Azure Web App - Dev"
-        if: github.ref == 'refs/heads/dev'
+        if: startsWith(github.ref, 'refs/heads/feature/') || github.ref == 'refs/heads/main' || github.ref == (github.event_name == 'pull_request' && github.event.action != 'closed')
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_DEV }}
           images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
 
       - name: "Deploy to Azure Web App - UAT"
-        if: github.ref == 'refs/heads/uat'
+        if: github.ref == (github.event_name == 'pull_request' && github.event.action != 'closed') || github.ref == 'refs/heads/main'
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_UAT }}
           images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
-
+          
           # ONCE UAT IS UP, CHANGE POSTMAND ENV FILE WITH UAT URL
       # # POSTMAN tests after UAT, before PROD
       # - name: Install Newman
