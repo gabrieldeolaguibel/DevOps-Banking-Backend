@@ -88,7 +88,9 @@ jobs:
       - name: "Build and push image"
         run: |
           docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
 
   deploy-dev:
     if: github.event_name != 'pull_request'
@@ -106,8 +108,8 @@ jobs:
       - name: "Deploy to Azure Web App - Dev"
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ env.BACKEND_WEBAPP_DEV }}
-          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}"
+          app-name: ${{ env.BACKEND_WEBAPP_DEV }}"
+          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
 
   deploy-uat:
     if: github.event.pull_request.base.ref == 'main' || github.ref == 'refs/heads/main'
@@ -126,7 +128,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_UAT }}
-          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}"
+          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
@@ -145,4 +147,4 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_PROD }}
-          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}"
+          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
