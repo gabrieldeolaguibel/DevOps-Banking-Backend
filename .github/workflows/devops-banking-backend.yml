@@ -108,7 +108,7 @@ jobs:
       - name: "Deploy to Azure Web App - Dev"
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ env.BACKEND_WEBAPP_DEV }}"
+          app-name: ${{ env.BACKEND_WEBAPP_DEV }}
           images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest"
 
   deploy-uat:
