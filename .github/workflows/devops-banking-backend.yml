@@ -15,6 +15,11 @@ env:
   KEY_VAULT_SECRET_NAME_ACR_PASSWORD: "acr-password1"
   KEY_VAULT_NAME: lemonke-kv
   DOCKER_REGISTRY_SERVER_URL: lemonkecr.azurecr.io
+  DBUSER: your_db_user # Add your database user here
+  DBPASS: your_db_password # Add your database password here
+  DBHOST: your_db_host # Add your database host here
+  DBNAME: your_db_name # Add your database name here
+  DBURL: your_db_url # Add your database URL here
 
 jobs:
   build-and-deploy:
