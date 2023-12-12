@@ -12,6 +12,4 @@ COPY . .
 
 EXPOSE 50505
 
-ENV NAME local
-
 ENTRYPOINT ["gunicorn", "iebank_api:app"]
