@@ -18,6 +18,7 @@ env:
   DBURL: 'postgres.database.azure.com'
   DBNAME: 'lemonke-db'
   DBPASS: 'mj1234'
+  DOCKER_REGISTRY_SERVER_URL: lemonkecr.azurecr.io
 
 
 jobs:
@@ -55,16 +56,16 @@ jobs:
         uses: azure/cli@v1
         with:
           inlineScript: |
-            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME }}-${{ env.ENV }} --query value -o tsv)" >> $GITHUB_ENV
-            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME }}-${{ env.ENV }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
 
       - name: 'Get docker registry credentials from key vault'
         if: env.ENV == 'prod'
         uses: azure/cli@v1
         with:
           inlineScript: |
-            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME }}-production --query value -o tsv)" >> $GITHUB_ENV
-            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME }}-production --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
 
       - uses: azure/docker-login@v1
         if: env.ENV != 'prod'
