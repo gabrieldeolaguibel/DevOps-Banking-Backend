@@ -87,6 +87,8 @@ jobs:
 
       - name: "Deploy to Azure Web App - Dev"
         if: startsWith(github.ref, 'refs/heads/feature/') || github.ref == 'refs/heads/main' || github.ref == (github.event_name == 'pull_request' && github.event.action != 'closed')
+        env:
+          APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_KEY_DEV }}
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_DEV }}
@@ -94,6 +96,8 @@ jobs:
 
       - name: "Deploy to Azure Web App - UAT"
         if: github.ref == (github.event_name == 'pull_request' && github.event.action != 'closed') || github.ref == 'refs/heads/main'
+        env:
+          APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_KEY_UAT }}
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_UAT }}
@@ -109,6 +113,8 @@ jobs:
 
       - name: "Deploy to Azure Web App - Prod"
         if: github.ref == 'refs/heads/main'
+        env:
+          APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_KEY_PROD }}
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.BACKEND_WEBAPP_PROD }}
